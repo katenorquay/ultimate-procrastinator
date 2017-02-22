@@ -25,30 +25,31 @@ app.get('/', function(req, res) {
 })
 
 app.post('/feed', function(req, res) {
-  // redditAPI()
-  // mediumAPI()
-  // hackerNewsAPI()
-  twitterAPI()
-  // anotherAPI()
-  res.render('Feed')
-})
+  redditAPI(function(data) {
+    console.log('tthis is the data', data)
+    res.send(data);
+  });
+});
+  // var someTweets = twitterAPI()
+  // console.log('this is the app', someTweets)
+  // res.render('Feed')
 
-function redditAPI() {
+
+function redditAPI(callback) {
+  var Redditobj;
   request
     .get("https://www.reddit.com/r/tech/top/.json?count=10")
     .end(function (err, res) {
       if (err) {console.log(err)}
-      for (var i = 0; i < 10; i++) {
-        if (i > 0) {
-          var Redditobj = {
+      for (var i = 1; i < 2; i++) {
+          Redditobj = {
             thumbnail: res.body.data.children[i].data.thumbnail,
             title: res.body.data.children[i].data.title,
             score: res.body.data.children[i].data.score
-          }
         }
-        console.log(Redditobj)
       }
-      console.log('------------')
+      console.log('this is the normal one', Redditobj)
+      callback(Redditobj)
     });
 }
 
@@ -62,12 +63,12 @@ function hackerNewsAPI() {
       if (err) { console.log(err)}
       else {
         var topStories = res.body.slice(0, 5)
-        getStories(topStories)
+        getHackerStories(topStories)
       }
     });
 }
 
-function getStories(topStories) {
+function getHackerStories(topStories) {
   topStories.map(function (story) {
     request
       .get("https://community-hacker-news-v1.p.mashape.com/item/" + story + ".json?print=pretty")
@@ -85,7 +86,7 @@ function getStories(topStories) {
               }
             }
         }
-        console.log(hackerObj);
+        // console.log(hackerObj);
       }
   })
 })
@@ -99,16 +100,24 @@ var twitterClient = new Twitter({
 })
 
 function twitterAPI() {
+  var theTweets;
   twitterClient.get('search/tweets', {q: '#tech', lang: 'en' }, function(error, tweets, response) {
     if (error) { console.log(error) }
     else {
-      var tweetText = []
-      for (var i = 0; i < tweets.statuses.length; i++) {
-        tweetText.push(tweets.statuses[i].text)
-      }
-      console.log(tweetText)
+      theTweets = extractTweetText(tweets)
+      console.log('inside the function', theTweets)
     }
   });
+  return theTweets
+}
+
+function extractTweetText(tweets) {
+  var tweetText = []
+  for (var i = 0; i < tweets.statuses.length; i++) {
+    tweetText.push(tweets.statuses[i].text)
+  }
+  console.log('inside extract', tweetText)
+  return tweetText
 }
 
 
