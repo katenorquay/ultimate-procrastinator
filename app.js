@@ -35,11 +35,11 @@ app.post('/feed', function(req, res) {
 
 function redditAPI() {
   request
-    .get("https://www.reddit.com/r/tech/top/.json?count=20")
+    .get("https://www.reddit.com/r/tech/top/.json?count=10")
     .end(function (err, res) {
       if (err) {console.log(err)}
-      for (var i = 0; i < res.body.data.children.length; i++) {
-        if (i >= 0) {
+      for (var i = 0; i < 10; i++) {
+        if (i > 0) {
           var Redditobj = {
             thumbnail: res.body.data.children[i].data.thumbnail,
             title: res.body.data.children[i].data.title,
@@ -68,7 +68,27 @@ function hackerNewsAPI() {
 }
 
 function getStories(topStories) {
-  console.log(topStories)
+  topStories.map(function (story) {
+    request
+      .get("https://community-hacker-news-v1.p.mashape.com/item/" + story + ".json?print=pretty")
+      .set("X-Mashape-Key", process.env.HACKER_NEWS_API_KEY)
+      .set("Accept", "application/json")
+      .end(function (err, res) {
+        if (err) { console.log(err) }
+        else {
+          for (var i = 0; i < 5; i++) {
+            if (i > 0) {
+              hackerObj = {
+                title: res.body.title,
+                url: res.body.url,
+                score: res.body.score
+              }
+            }
+        }
+        console.log(hackerObj);
+      }
+  })
+})
 }
 
 
