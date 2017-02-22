@@ -6,7 +6,7 @@ var path = require('path')
 var bodyParser = require('body-parser')
 var request = require('superagent')
 var tumblr = require('tumblr.js')
-
+var Twitter = require('twitter')
 require('dotenv').config()
 
 
@@ -27,8 +27,8 @@ app.get('/', function(req, res) {
 app.post('/feed', function(req, res) {
   // redditAPI()
   // mediumAPI()
-  hackerNewsAPI()
-  // twitterAPI()
+  // hackerNewsAPI()
+  twitterAPI()
   // anotherAPI()
   res.render('Feed')
 })
@@ -90,6 +90,27 @@ function getStories(topStories) {
   })
 })
 }
+
+var twitterClient = new Twitter({
+  consumer_key: process.env.TWITTER_CONSUMER_KEY,
+  consumer_secret: process.env.TWITTER_CONSUMER_SECRET,
+  access_token_key: process.env.TWITTER_ACCESS_TOKEN_KEY,
+  access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET
+})
+
+function twitterAPI() {
+  twitterClient.get('search/tweets', {q: '#tech', lang: 'en' }, function(error, tweets, response) {
+    if (error) { console.log(error) }
+    else {
+      var tweetText = []
+      for (var i = 0; i < tweets.statuses.length; i++) {
+        tweetText.push(tweets.statuses[i].text)
+      }
+      console.log(tweetText)
+    }
+  });
+}
+
 
 
 
