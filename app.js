@@ -25,10 +25,14 @@ app.get('/', function(req, res) {
 })
 
 app.post('/feed', function(req, res) {
-  redditAPI(function(data) {
-    console.log('tthis is the data', data)
+  // redditAPI(callback)
+  // hackerNewsAPI(callback)
+  twitterAPI(callback)
+
+  function callback(data) {
+    console.log('this is the data', data)
     res.send(data);
-  });
+  };
 });
   // var someTweets = twitterAPI()
   // console.log('this is the app', someTweets)
@@ -54,7 +58,7 @@ function redditAPI(callback) {
 }
 
 
-function hackerNewsAPI() {
+function hackerNewsAPI(callback) {
   request
     .get("https://community-hacker-news-v1.p.mashape.com/topstories.json?print=pretty")
     .set("X-Mashape-Key", process.env.HACKER_NEWS_API_KEY)
@@ -63,12 +67,12 @@ function hackerNewsAPI() {
       if (err) { console.log(err)}
       else {
         var topStories = res.body.slice(0, 5)
-        getHackerStories(topStories)
+        getHackerStories(topStories, callback)
       }
     });
 }
 
-function getHackerStories(topStories) {
+function getHackerStories(topStories, callback) {
   topStories.map(function (story) {
     request
       .get("https://community-hacker-news-v1.p.mashape.com/item/" + story + ".json?print=pretty")
@@ -86,7 +90,7 @@ function getHackerStories(topStories) {
               }
             }
         }
-        // console.log(hackerObj);
+        callback(hackerObj)
       }
   })
 })
@@ -99,25 +103,23 @@ var twitterClient = new Twitter({
   access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET
 })
 
-function twitterAPI() {
+function twitterAPI(callback) {
   var theTweets;
   twitterClient.get('search/tweets', {q: '#tech', lang: 'en' }, function(error, tweets, response) {
     if (error) { console.log(error) }
     else {
-      theTweets = extractTweetText(tweets)
+      theTweets = extractTweetText(tweets, callback)
       console.log('inside the function', theTweets)
     }
   });
-  return theTweets
 }
 
-function extractTweetText(tweets) {
+function extractTweetText(tweets, callback) {
   var tweetText = []
   for (var i = 0; i < tweets.statuses.length; i++) {
     tweetText.push(tweets.statuses[i].text)
   }
-  console.log('inside extract', tweetText)
-  return tweetText
+  callback(tweetText)
 }
 
 
