@@ -25,35 +25,36 @@ app.get('/', function(req, res) {
 })
 
 app.post('/feed', function(req, res) {
-  // redditAPI(callback)
-  // hackerNewsAPI(callback)
-  twitterAPI(callback)
-
-  function callback(data) {
-    console.log('this is the data', data)
-    res.send(data);
-  };
+  twitterAPI(function (tweets) {
+    redditAPI(function (redditStories) {
+      hackerNewsAPI(function (hackerStories) {
+        var data = {
+          tweets: tweets,
+          redditStories: redditStories,
+          hackerStories: hackerStories
+        }
+        res.send(data)
+      })
+    })
+  })
 });
-  // var someTweets = twitterAPI()
-  // console.log('this is the app', someTweets)
-  // res.render('Feed')
 
 
 function redditAPI(callback) {
-  var Redditobj;
+  var Redditobjs = []
   request
     .get("https://www.reddit.com/r/tech/top/.json?count=10")
     .end(function (err, res) {
       if (err) {console.log(err)}
-      for (var i = 1; i < 2; i++) {
+      for (var i = 1; i < 5; i++) {
           Redditobj = {
             thumbnail: res.body.data.children[i].data.thumbnail,
             title: res.body.data.children[i].data.title,
             score: res.body.data.children[i].data.score
         }
+        Redditobjs.push(Redditobj)
       }
-      console.log('this is the normal one', Redditobj)
-      callback(Redditobj)
+      callback(Redditobjs)
     });
 }
 
@@ -73,6 +74,7 @@ function hackerNewsAPI(callback) {
 }
 
 function getHackerStories(topStories, callback) {
+  var hackerObjs = []
   topStories.map(function (story) {
     request
       .get("https://community-hacker-news-v1.p.mashape.com/item/" + story + ".json?print=pretty")
@@ -81,16 +83,15 @@ function getHackerStories(topStories, callback) {
       .end(function (err, res) {
         if (err) { console.log(err) }
         else {
-          for (var i = 0; i < 5; i++) {
-            if (i > 0) {
-              hackerObj = {
-                title: res.body.title,
-                url: res.body.url,
-                score: res.body.score
-              }
-            }
-        }
-        callback(hackerObj)
+          hackerObj = {
+            title: res.body.title,
+            url: res.body.url,
+            score: res.body.score
+          }
+          hackerObjs.push(hackerObj)
+          if (hackerObjs.length === 5) {
+            callback(hackerObjs)
+          }
       }
   })
 })
@@ -109,7 +110,6 @@ function twitterAPI(callback) {
     if (error) { console.log(error) }
     else {
       theTweets = extractTweetText(tweets, callback)
-      console.log('inside the function', theTweets)
     }
   });
 }
