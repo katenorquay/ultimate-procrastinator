@@ -25,18 +25,19 @@ app.get('/', function(req, res) {
 })
 
 app.post('/feed', function(req, res) {
-  twitterAPI(function (tweets) {
-    redditAPI(function (redditStories) {
-      hackerNewsAPI(function (hackerStories) {
-        var data = {
-          tweets: tweets,
-          redditStories: redditStories,
-          hackerStories: hackerStories
-        }
-        res.send(data)
-      })
-    })
-  })
+  // twitterAPI(function (tweets) {
+  //   redditAPI(function (redditStories) {
+  //     hackerNewsAPI(function (hackerStories) {
+  //       var data = {
+  //         tweets: tweets,
+  //         redditStories: redditStories,
+  //         hackerStories: hackerStories
+  //       }
+  //       res.render('Feed', data)
+  //     })
+  //   })
+  // })
+  tumblrAPI()
 });
 
 
@@ -122,7 +123,14 @@ function extractTweetText(tweets, callback) {
   callback(tweetText)
 }
 
+var tumblrClient = tumblr.createClient({ consumer_key: process.env.TUMBLR_CONSUMER_KEY });
 
+function tumblrAPI() {
+  tumblrClient.taggedPosts('art', function (err, data) {
+    if (err) { console.log(err)}
+    console.log(data)
+  });
+}
 
 
 
