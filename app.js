@@ -28,12 +28,18 @@ app.post('/feed', function(req, res) {
   // twitterAPI(function (tweets) {
   //   redditAPI(function (redditStories) {
   //     hackerNewsAPI(function (hackerStories) {
-  //       var data = {
-  //         tweets: tweets,
-  //         redditStories: redditStories,
-  //         hackerStories: hackerStories
-  //       }
-  //       res.render('Feed', data)
+  //       tumblrAPI(function (tumblrPosts) {
+  //         dribbleAPI(function (dribbblePosts) {
+  //           var data = {
+  //             tweets: tweets,
+  //             redditStories: redditStories,
+  //             hackerStories: hackerStories,
+  //             tumblrPosts: tumblrPosts,
+  //             dribbblePosts: dribbblePosts
+  //           }
+  //           res.render('Feed', data)
+  //         })
+  //       })
   //     })
   //   })
   // })
@@ -125,14 +131,30 @@ function extractTweetText(tweets, callback) {
 
 var tumblrClient = tumblr.createClient({ consumer_key: process.env.TUMBLR_CONSUMER_KEY });
 
-function tumblrAPI() {
-  tumblrClient.taggedPosts('art', function (err, data) {
+function tumblrAPI(callback) {
+  var tumblrPosts = []
+  tumblrClient.taggedPosts('art', function (err, res) {
     if (err) { console.log(err)}
-    console.log(data)
+    else {
+      for (var i = 0; i <= 10; i++) {
+        var tumblrPost = {
+          photo: res[i].photos[0].original_size.url
+        }
+        tumblrPosts.push(tumblrPost)
+      }
+      callback(tumblrPosts)
+    }
   });
 }
 
 
+function dribbleAPI() {
+  request
+    .get('https://api.dribbble.com/v1/shots?access_token=' + DRIBBBLE_ACCESS_TOKEN)
+    .end(function (err, res) {
+      console.log(res)
+    })
+}
 
 
 
